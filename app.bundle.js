@@ -796,7 +796,8 @@ document.getElementById('resetButton').addEventListener('click', () => {
 });
 
 const goalDialog = document.getElementById('goalDialog');
-document.getElementById('openPlanner').addEventListener('click', () => {
+if (goalDialog) {
+document.getElementById('openPlanner')?.addEventListener('click', () => {
   resetPlannerView();
   goalDialog.showModal();
 });
@@ -833,6 +834,7 @@ document.getElementById('runPlanner').addEventListener('click', () => {
     results.hidden = false;
   }, 40);
 });
+}
 
 restoreConfig();
 runAnalysis();
