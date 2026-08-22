@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Simulateur probabiliste d'indépendance financière adapté à la Belgique." />
+    <title>Capital Plan — Simulateur d'indépendance financière</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Capital Plan — accueil">
+        <span class="brand-mark">C</span>
+        <span>CAPITAL<span>/PLAN</span></span>
+      </a>
+      <div class="topbar-meta">
+        <span class="live-dot"></span>
+        Belgique · modèle 2026
+      </div>
+    </header>
+
+    <main id="top" class="app-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">PLANIFIER, TESTER, DÉCIDER</p>
+          <h1>L’indépendance financière,<br /><em>sans fausse précision.</em></h1>
+          <p class="hero-copy">Ton budget réel, ta réserve, ta pension et les mauvaises années de marché réunis dans un même scénario. Tous les montants sont exprimés en pouvoir d’achat d’aujourd’hui.</p>
+        </div>
+        <div class="confidence-legend" aria-label="Définition des seuils">
+          <span><i class="dot possible"></i> Possible : 50 % de réussite</span>
+          <span><i class="dot robust"></i> Robuste : 90 % de réussite</span>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="control-panel" aria-label="Hypothèses de simulation">
+          <div class="control-heading">
+            <div>
+              <p class="eyebrow">TES HYPOTHÈSES</p>
+              <h2>Construis ton scénario</h2>
+            </div>
+            <button id="resetButton" class="text-button" type="button">Réinitialiser</button>
+          </div>
+
+          <details open>
+            <summary><span class="summary-index">01</span> Profil et patrimoine</summary>
+            <div class="details-body two-cols">
+              <label class="field"><span>Âge aujourd’hui</span><div><input id="age" type="number" min="18" max="75" value="38" /><b>ans</b></div></label>
+              <label class="field"><span>Horizon de sécurité</span><div><input id="horizonAge" type="number" min="80" max="110" value="95" /><b>ans</b></div></label>
+              <label class="field wide"><span>Portefeuille investi</span><div><input id="portfolio" type="number" min="0" step="1000" value="40000" /><b>€</b></div></label>
+              <label class="field wide"><span>Réserve de sécurité disponible</span><div><input id="reserve" type="number" min="0" step="500" value="8000" /><b>€</b></div></label>
+            </div>
+            <p class="field-note">La réserve reste séparée du capital destiné à financer ton indépendance.</p>
+          </details>
+
+          <details open>
+            <summary><span class="summary-index">02</span> Budget mensuel</summary>
+            <div class="details-body">
+              <div class="budget-section">
+                <h3>Revenus nets</h3>
+                <label class="budget-row"><span><i class="budget-icon income">↗</i>Salaire</span><div><input id="salary" type="number" min="0" step="50" value="3000" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon income">+</i>Autres revenus</span><div><input id="otherIncome" type="number" min="0" step="50" value="0" /><b>€</b></div></label>
+              </div>
+
+              <div class="budget-section">
+                <h3>Dépenses de vie</h3>
+                <label class="budget-row"><span><i class="budget-icon housing">⌂</i>Logement</span><div><input data-expense id="housing" type="number" min="0" step="25" value="850" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon food">◒</i>Alimentation</span><div><input data-expense id="food" type="number" min="0" step="25" value="350" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon transport">◇</i>Transport</span><div><input data-expense id="transport" type="number" min="0" step="25" value="200" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon health">+</i>Factures & santé</span><div><input data-expense id="bills" type="number" min="0" step="25" value="250" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon debt">−</i>Remboursement de dette</span><div><input data-expense id="debtPayment" type="number" min="0" step="25" value="0" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon leisure">✦</i>Loisirs</span><div><input data-expense data-flexible id="leisure" type="number" min="0" step="25" value="250" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon other">··</i>Autres</span><div><input data-expense data-flexible id="otherExpense" type="number" min="0" step="25" value="100" /><b>€</b></div></label>
+              </div>
+
+              <div class="budget-section allocations">
+                <h3>Construction du patrimoine</h3>
+                <label class="budget-row"><span><i class="budget-icon invest">↗</i>Investir</span><div><input id="monthlyInvest" type="number" min="0" step="50" value="600" /><b>€</b></div></label>
+                <label class="budget-row"><span><i class="budget-icon safety">▣</i>Mettre en sécurité</span><div><input id="monthlySafety" type="number" min="0" step="25" value="200" /><b>€</b></div></label>
+              </div>
+
+              <div id="budgetBalance" class="budget-balance"><span>Reste non alloué</span><strong>200 €</strong></div>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="summary-index">03</span> Protection et pension</summary>
+            <div class="details-body two-cols">
+              <label class="field"><span>Réserve cible</span><div><input id="reserveMonths" type="number" min="1" max="24" value="6" /><b>mois</b></div></label>
+              <label class="field"><span>Marge sur les dépenses</span><div><input id="spendingBuffer" type="number" min="0" max="50" step="1" value="10" /><b>%</b></div></label>
+              <label class="field"><span>Âge de la pension</span><div><input id="pensionAge" type="number" min="55" max="75" value="67" /><b>ans</b></div></label>
+              <label class="field"><span>Pension nette estimée</span><div><input id="pensionIncome" type="number" min="0" step="50" value="1500" /><b>€/m.</b></div></label>
+              <label class="check-row wide"><input id="redirectSafety" type="checkbox" checked /><span>Investir automatiquement le versement de sécurité une fois la réserve cible atteinte.</span></label>
+              <label class="check-row wide"><input id="flexSpending" type="checkbox" checked /><span>Réduire jusqu’à 20 % des dépenses flexibles après une année de marché très négative.</span></label>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="summary-index">04</span> Événements de vie</summary>
+            <div class="details-body two-cols compact-fields">
+              <label class="field"><span>Croissance réelle du salaire</span><div><input id="salaryGrowth" type="number" min="-5" max="10" step="0.25" value="0" /><b>%/an</b></div></label>
+              <label class="check-row"><input id="investSalaryGrowth" type="checkbox" checked /><span>Investir les hausses de salaire nettes.</span></label>
+              <label class="field"><span>Dette terminée à</span><div><input id="debtEndAge" type="number" min="18" max="95" value="55" /><b>ans</b></div></label>
+              <label class="field"><span>Changement logement à</span><div><input id="housingChangeAge" type="number" min="18" max="95" value="67" /><b>ans</b></div></label>
+              <label class="field wide"><span>Variation mensuelle du logement après ce changement</span><div><input id="housingChange" type="number" min="-5000" max="5000" step="50" value="0" /><b>€/m.</b></div></label>
+              <label class="field"><span>Interruption à</span><div><input id="careerBreakAge" type="number" min="18" max="75" value="45" /><b>ans</b></div></label>
+              <label class="field"><span>Durée de l’interruption</span><div><input id="careerBreakMonths" type="number" min="0" max="120" value="0" /><b>mois</b></div></label>
+              <label class="field wide"><span>Revenu net pendant l’interruption</span><div><input id="careerBreakIncome" type="number" min="0" step="50" value="0" /><b>€/m.</b></div></label>
+              <label class="field"><span>Événement ponctuel à</span><div><input id="oneOffAge" type="number" min="18" max="95" value="50" /><b>ans</b></div></label>
+              <label class="field"><span>Montant (+ apport, − dépense)</span><div><input id="oneOffAmount" type="number" min="-1000000" max="1000000" step="1000" value="0" /><b>€</b></div></label>
+              <label class="field"><span>Capital immobilier net</span><div><input id="realEstateEquity" type="number" min="0" step="5000" value="0" /><b>€</b></div></label>
+              <label class="field"><span>Vente prévue à</span><div><input id="realEstateSaleAge" type="number" min="18" max="110" value="70" /><b>ans</b></div></label>
+              <p class="field-note wide">Une valeur nulle désactive implicitement l’événement correspondant. Le capital immobilier n’est jamais compté sans vente programmée.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="summary-index">05</span> Marchés et retraits</summary>
+            <div class="details-body">
+              <div class="scenario-switch" role="group" aria-label="Scénario de marché">
+                <button type="button" data-scenario="prudent">Prudent</button>
+                <button type="button" data-scenario="central" class="active">Central</button>
+                <button type="button" data-scenario="favorable">Favorable</button>
+              </div>
+              <div class="two-cols compact-fields">
+                <label class="field"><span>Rendement nominal</span><div><input id="returnRate" type="number" min="0" max="15" step="0.25" value="7" /><b>%</b></div></label>
+                <label class="field"><span>Volatilité annuelle</span><div><input id="volatility" type="number" min="0" max="35" step="1" value="15" /><b>%</b></div></label>
+                <label class="field"><span>Inflation moyenne</span><div><input id="inflation" type="number" min="0" max="10" step="0.25" value="2.5" /><b>%</b></div></label>
+                <label class="field"><span>Frais annuels ETF</span><div><input id="fees" type="number" min="0" max="3" step="0.05" value="0.25" /><b>%</b></div></label>
+                <label class="field"><span>Taux de retrait initial</span><div><input id="withdrawalRate" type="number" min="2" max="7" step="0.1" value="3.5" /><b>%</b></div></label>
+                <label class="field"><span>Seuil de robustesse</span><div><input id="successTarget" type="number" min="70" max="99" step="1" value="90" /><b>%</b></div></label>
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="summary-index">06</span> Fiscalité belge</summary>
+            <div class="details-body two-cols compact-fields">
+              <label class="field"><span>TOB achat / vente</span><div><input id="transactionTax" type="number" min="0" max="2" step="0.01" value="0.12" /><b>%</b></div></label>
+              <label class="field"><span>Taxe sur plus-values</span><div><input id="capitalGainsTax" type="number" min="0" max="50" step="1" value="10" /><b>%</b></div></label>
+              <label class="field"><span>Abattement annuel</span><div><input id="gainAllowance" type="number" min="0" step="500" value="10000" /><b>€</b></div></label>
+              <label class="field"><span>Coût d’achat du portefeuille</span><div><input id="costBasisRatio" type="number" min="0" max="100" step="5" value="75" /><b>%</b></div></label>
+              <label class="field"><span>Taxe compte-titres</span><div><input id="accountTax" type="number" min="0" max="2" step="0.05" value="0.30" /><b>%</b></div></label>
+              <label class="field"><span>Seuil du compte-titres</span><div><input id="accountTaxThreshold" type="number" min="0" step="50000" value="1000000" /><b>€</b></div></label>
+              <p class="field-note wide">Le régime est modélisé de façon simplifiée et paramétrable. Vérifie ton ETF et ta situation avec un professionnel.</p>
+            </div>
+          </details>
+        </aside>
+
+        <section class="dashboard" aria-live="polite">
+          <div id="calculationState" class="calculation-state"><span></span> Simulation probabiliste en cours…</div>
+
+          <div class="result-grid">
+            <article class="result-card hero-result">
+              <div class="card-label">FENÊTRE D’INDÉPENDANCE</div>
+              <strong id="fiWindow">—</strong>
+              <p id="fiWindowDetail">Calcul des trajectoires…</p>
+              <div class="range-track" aria-hidden="true"><i id="rangePossible"></i><i id="rangeRobust"></i></div>
+            </article>
+            <article class="result-card">
+              <div class="card-label">SCÉNARIO ROBUSTE</div>
+              <strong id="robustAge">—</strong>
+              <p id="robustDate">Seuil de réussite : 90 %</p>
+            </article>
+            <article class="result-card">
+              <div class="card-label">DÉPENSES À FINANCER</div>
+              <strong id="monthlyNeed">—</strong>
+              <p id="pensionEffect">après marge de sécurité</p>
+            </article>
+          </div>
+
+          <article class="panel verdict-panel">
+            <div class="score-ring" id="scoreRing"><span id="successScore">—</span><small>réussite</small></div>
+            <div class="verdict-copy">
+              <div class="card-label">LECTURE DU SCÉNARIO</div>
+              <h2 id="verdictTitle">Analyse en cours</h2>
+              <p id="verdictText">Nous testons les mauvaises séquences de marché, l’inflation, les frais, la fiscalité et la pension.</p>
+            </div>
+            <div class="verdict-metric"><span>Capital médian à l’indépendance</span><strong id="fiCapital">—</strong></div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div><div class="card-label">TRAJECTOIRES DU PATRIMOINE</div><h2>Ce qui peut réellement arriver</h2></div>
+              <div class="chart-legend"><span><i class="band"></i> 80 % des trajectoires</span><span><i class="median"></i> Médiane</span><span><i class="target"></i> Capital cible</span></div>
+            </div>
+            <div id="projectionChart" class="chart" role="img" aria-label="Projection probabiliste du portefeuille jusqu'à l'horizon choisi"></div>
+          </article>
+
+          <div class="insight-grid">
+            <article class="panel budget-panel">
+              <div class="panel-heading"><div><div class="card-label">BUDGET AUJOURD’HUI</div><h2>Chaque euro a un rôle</h2></div><span id="savingsRate" class="metric-chip">—</span></div>
+              <div id="budgetBar" class="budget-bar"></div>
+              <div id="budgetLegend" class="budget-legend"></div>
+              <div id="budgetWarning" class="inline-note"></div>
+            </article>
+
+            <article class="panel reserve-panel">
+              <div class="panel-heading"><div><div class="card-label">RÉSERVE DE SÉCURITÉ</div><h2 id="reserveStatus">—</h2></div><span id="reserveMonthsNow" class="metric-chip">—</span></div>
+              <div class="reserve-progress"><span id="reserveProgress"></span></div>
+              <p id="reserveDetail">—</p>
+            </article>
+          </div>
+
+          <article class="panel stress-panel">
+            <div class="panel-heading"><div><div class="card-label">TESTS DE RÉSISTANCE</div><h2>Le plan face aux mauvaises surprises</h2></div><span class="small-muted">au même âge de départ</span></div>
+            <div class="stress-grid">
+              <div><span>Crise de −35 % au départ</span><strong id="stressCrash">—</strong><small>probabilité de réussite</small></div>
+              <div><span>Inflation à 5 % pendant 3 ans</span><strong id="stressInflation">—</strong><small>probabilité de réussite</small></div>
+              <div><span>Sans pension légale</span><strong id="stressPension">—</strong><small>probabilité de réussite</small></div>
+            </div>
+          </article>
+
+          <article class="panel methodology-panel">
+            <div>
+              <div class="card-label">CE QUE LE MODÈLE CORRIGE</div>
+              <h2>Une estimation, pas une promesse</h2>
+            </div>
+            <div class="method-list">
+              <p><span>01</span><b>Risque de séquence</b> Les rendements varient chaque année ; leur ordre compte autant que leur moyenne.</p>
+              <p><span>02</span><b>Budget réel</b> Les dépenses de vie sont séparées des transferts vers l’investissement et la réserve.</p>
+              <p><span>03</span><b>Vie entière</b> Le portefeuille doit tenir jusqu’à l’horizon choisi, avec pension, événements de vie, frais et fiscalité.</p>
+              <p><span>04</span><b>Décision robuste</b> Une fenêtre et un taux de réussite remplacent la précision trompeuse au mois près.</p>
+            </div>
+            <p class="sources">Hypothèses belges configurables · Sources : <a href="https://finances.belgium.be/fr/entreprises/autres-taxes/taxes-diverses/taxe-operations-bourse" target="_blank" rel="noreferrer">SPF Finances — TOB</a>, <a href="https://www.dekamer.be/flwb/html/56/F/56K1244.html" target="_blank" rel="noreferrer">Chambre — plus-values financières</a>, <a href="https://finances.belgium.be/fr/node/14191" target="_blank" rel="noreferrer">SPF Finances — comptes-titres</a>, <a href="https://socialsecurity.belgium.be/fr/news/epsco-les-defis-de-la-silver-economy-14-03-2025" target="_blank" rel="noreferrer">SPF Sécurité sociale — pension</a>. Les résultats ne constituent pas un conseil financier.</p>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
