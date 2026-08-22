@@ -11,6 +11,13 @@ Simulateur personnel d’indépendance financière adapté par défaut à une pe
 - Elle intègre pension, frais, TOB, fiscalité simplifiée des plus-values et taxe sur les comptes-titres.
 - Elle accepte des événements de vie : interruption de carrière, évolution salariale, fin d’une dette, changement de logement, apport ou dépense exceptionnelle et vente immobilière.
 - Elle confronte le résultat à trois stress tests au lieu de supposer une croissance régulière.
+- Son mode objectif calcule les décisions nécessaires pour viser un âge donné, 60 ans par défaut, puis mesure chaque plan sous trois hypothèses de marché.
+
+## Mode objectif
+
+Le bouton « Construire un plan pour un âge cible » compare trois stratégies : équilibrer hausse de revenu et baisse des dépenses flexibles, préserver le niveau de vie en augmentant les revenus, ou privilégier la réduction des dépenses. Le marché prudent, central ou favorable reste une hypothèse externe au plan.
+
+Le moteur calcule le besoin sans plafond arbitraire, signale les ratios d’effort élevés et accepte des limites personnelles facultatives. L’utilisateur peut ensuite appliquer un plan au simulateur principal ; aucune hypothèse n’est modifiée avant cette action explicite.
 
 ## Limites assumées
 
@@ -18,7 +25,7 @@ Le modèle est une aide à la décision, pas une prévision ni un conseil financ
 
 ## Utilisation
 
-Servir le dossier parent avec un serveur HTTP, puis ouvrir `/v2/`. L’application ne dépend d’aucune bibliothèque externe et conserve les hypothèses dans le stockage local du navigateur.
+Ouvrir directement `index.html` ou servir le dossier avec un serveur HTTP. L’application ne dépend d’aucune bibliothèque externe et conserve les hypothèses dans le stockage local du navigateur. Le fichier `app.bundle.js` est généré depuis `model.js` et `app.js` avec `npm run build`.
 
 ## Vérification
 

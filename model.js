@@ -331,3 +331,121 @@ export function analyzeScenario(config, options = {}) {
     stress
   };
 }
+
+function reduceFlexibleSpending(config, amount) {
+  const next = { ...config };
+  const totalFlexible = config.leisure + config.otherExpense;
+  const cut = Math.min(Math.max(0, amount), totalFlexible);
+  if (totalFlexible > 0) {
+    next.leisure = Math.max(0, config.leisure - cut * config.leisure / totalFlexible);
+    next.otherExpense = Math.max(0, config.otherExpense - cut * config.otherExpense / totalFlexible);
+  }
+  return { config: next, cut };
+}
+
+export function applyGoalStrategy(config, type, effort = 0) {
+  const budget = budgetOf(config);
+  const reallocated = Math.max(0, budget.balance);
+  let next = { ...config, monthlyInvest: config.monthlyInvest + reallocated };
+  let expenseCut = 0;
+  let incomeIncrease = 0;
+
+  if (type === 'spending') {
+    const reduced = reduceFlexibleSpending(next, effort);
+    next = reduced.config;
+    expenseCut = reduced.cut;
+    next.monthlyInvest += expenseCut;
+  } else if (type === 'income') {
+    incomeIncrease = Math.max(0, effort);
+    next.otherIncome += incomeIncrease;
+    next.monthlyInvest += incomeIncrease;
+  } else if (type === 'balanced') {
+    const desiredExpenseCut = Math.max(0, effort) / 2;
+    const reduced = reduceFlexibleSpending(next, desiredExpenseCut);
+    next = reduced.config;
+    expenseCut = reduced.cut;
+    incomeIncrease = Math.max(0, effort - expenseCut);
+    next.otherIncome += incomeIncrease;
+    next.monthlyInvest += expenseCut + incomeIncrease;
+  }
+
+  return {
+    config: next,
+    breakdown: {
+      reallocated,
+      expenseCut,
+      incomeIncrease,
+      totalNewEffort: expenseCut + incomeIncrease,
+      resultingInvestment: next.monthlyInvest
+    }
+  };
+}
+
+function requiredEffort(config, type, targetAge, targetProbability, scenario, runs) {
+  const scenarioConfig = { ...config, ...SCENARIOS[scenario] };
+  const probabilityAt = effort => successProbability(applyGoalStrategy(scenarioConfig, type, effort).config, targetAge, runs).probability;
+  const initialProbability = probabilityAt(0);
+  if (initialProbability >= targetProbability) return { effort: 0, probability: initialProbability };
+
+  const flexible = budgetOf(config).flexible;
+  const technicalLimit = type === 'spending' ? flexible : Math.max(20000, config.salary * 5);
+  let high = type === 'spending' ? flexible : 100;
+  let highProbability = probabilityAt(high);
+  while (highProbability < targetProbability && high < technicalLimit) {
+    high = Math.min(technicalLimit, high * 2);
+    highProbability = probabilityAt(high);
+  }
+  if (highProbability < targetProbability) return { effort: null, probability: highProbability, testedEffort: high };
+
+  let low = 0;
+  for (let i = 0; i < 11; i += 1) {
+    const mid = (low + high) / 2;
+    if (probabilityAt(mid) >= targetProbability) high = mid;
+    else low = mid;
+  }
+  return { effort: Math.ceil(high / 10) * 10, probability: probabilityAt(high) };
+}
+
+export function planForTarget(config, targetAge = 60, targetPercent = 90, options = {}) {
+  const quickRuns = options.quickRuns ?? 100;
+  const detailRuns = options.detailRuns ?? 220;
+  const targetProbability = targetPercent / 100;
+  const boundedTargetAge = Math.max(config.age + 1, Math.min(config.horizonAge - 5, targetAge));
+  const marketKeys = ['prudent', 'central', 'favorable'];
+  const strategyTypes = ['balanced', 'income', 'spending'];
+  const baselineApplied = applyGoalStrategy(config, 'current', 0);
+  const baselineProbabilities = Object.fromEntries(marketKeys.map(market => {
+    const marketConfig = { ...baselineApplied.config, ...SCENARIOS[market] };
+    return [market, successProbability(marketConfig, boundedTargetAge, detailRuns).probability];
+  }));
+
+  const plans = strategyTypes.map(type => {
+    const requirements = Object.fromEntries(marketKeys.map(market => [
+      market,
+      requiredEffort(config, type, boundedTargetAge, targetProbability, market, market === 'central' ? detailRuns : quickRuns)
+    ]));
+    const centralEffort = requirements.central.effort;
+    const fallbackEffort = centralEffort ?? requirements.central.testedEffort ?? 0;
+    const applied = applyGoalStrategy(config, type, fallbackEffort);
+    const probabilities = Object.fromEntries(marketKeys.map(market => {
+      const marketConfig = { ...applied.config, ...SCENARIOS[market] };
+      return [market, successProbability(marketConfig, boundedTargetAge, detailRuns).probability];
+    }));
+    return {
+      type,
+      requirements,
+      effort: centralEffort,
+      appliedConfig: applied.config,
+      breakdown: applied.breakdown,
+      probabilities,
+      reachesCentralTarget: centralEffort !== null && probabilities.central >= targetProbability
+    };
+  });
+
+  return {
+    targetAge: boundedTargetAge,
+    targetPercent,
+    baseline: { ...baselineApplied, probabilities: baselineProbabilities },
+    plans
+  };
+}

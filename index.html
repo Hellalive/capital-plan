@@ -156,6 +156,7 @@
               <strong id="fiWindow">—</strong>
               <p id="fiWindowDetail">Calcul des trajectoires…</p>
               <div class="range-track" aria-hidden="true"><i id="rangePossible"></i><i id="rangeRobust"></i></div>
+              <button id="openPlanner" class="goal-trigger" type="button"><span>◎</span> Construire un plan pour un âge cible</button>
             </article>
             <article class="result-card">
               <div class="card-label">SCÉNARIO ROBUSTE</div>
@@ -228,6 +229,47 @@
       </div>
     </main>
 
-    <script type="module" src="app.js"></script>
+    <dialog id="goalDialog" class="goal-dialog" aria-labelledby="goalTitle">
+      <div class="goal-dialog-shell">
+        <header class="goal-header">
+          <div>
+            <p class="eyebrow">MODE OBJECTIF</p>
+            <h2 id="goalTitle">Construire un plan vers ton indépendance</h2>
+            <p>Le moteur cherche les décisions minimales à prendre et les confronte à trois environnements de marché. Le marché reste une incertitude, jamais un levier.</p>
+          </div>
+          <button id="closePlanner" class="close-button" type="button" aria-label="Fermer">×</button>
+        </header>
+
+        <section class="goal-settings">
+          <label class="goal-field"><span>Être indépendant à</span><div><input id="goalAge" type="number" min="25" max="85" value="60" /><b>ans</b></div></label>
+          <label class="goal-field"><span>Probabilité recherchée</span><div><input id="goalConfidence" type="number" min="70" max="99" value="90" /><b>%</b></div></label>
+          <button id="runPlanner" class="primary-button" type="button">Calculer les plans</button>
+        </section>
+
+        <details class="personal-limits">
+          <summary>Ajouter mes limites personnelles <small>facultatif</small></summary>
+          <div class="limit-grid">
+            <label class="goal-field"><span>Réduction mensuelle maximale</span><div><input id="goalMaxCut" type="number" min="0" step="25" placeholder="Aucune" /><b>€</b></div></label>
+            <label class="goal-field"><span>Revenu supplémentaire maximal</span><div><input id="goalMaxIncome" type="number" min="0" step="50" placeholder="Aucune" /><b>€/m.</b></div></label>
+            <label class="goal-field"><span>Investissement mensuel maximal</span><div><input id="goalMaxInvestment" type="number" min="0" step="50" placeholder="Aucune" /><b>€/m.</b></div></label>
+          </div>
+          <p>Sans limite, le besoin réel est calculé puis accompagné d’avertissements. Avec une limite, les plans restent visibles mais sont signalés comme hors de tes contraintes.</p>
+        </details>
+
+        <div id="plannerIdle" class="planner-idle">
+          <span>60</span>
+          <div><strong>Fixe ton âge cible, puis lance le calcul.</strong><p>Les résultats n’écraseront pas tes hypothèses actuelles tant que tu n’appliques pas un plan.</p></div>
+        </div>
+        <div id="plannerLoading" class="planner-loading" hidden><i></i><span>Recherche des plans et validation sur plusieurs milliers de trajectoires…</span></div>
+        <section id="plannerResults" class="planner-results" hidden>
+          <div id="plannerDiagnosis" class="planner-diagnosis"></div>
+          <div class="market-explainer"><strong>Fourchette de robustesse</strong><span>Défavorable</span><span>Central</span><span>Favorable</span></div>
+          <div id="plannerCards" class="planner-cards"></div>
+          <p class="planner-note">Les trois colonnes sont des hypothèses de marché, pas un intervalle statistique garanti. Chaque pourcentage provient de trajectoires Monte-Carlo comprenant volatilité, frais, pension et fiscalité.</p>
+        </section>
+      </div>
+    </dialog>
+
+    <script defer src="app.bundle.js?v=3"></script>
   </body>
 </html>
